@@ -1,0 +1,28 @@
+package common
+
+import "encoding/json"
+
+// 定时任务
+type Job struct {
+	Name     string `json:"name"`
+	Command  string `json:"command"`
+	CronExpr string `json:"cron_expr"`
+}
+
+// HTTP接口
+type Response struct {
+	ErrNo int         `json:"err_no"`
+	Msg   string      `json:"msg"`
+	Data  interface{} `json:"data"`
+}
+
+func BuildResponse(errNo int, msg string, data interface{}) (resp []byte, err error) {
+	response := Response{
+		ErrNo: errNo,
+		Msg:   msg,
+		Data:  data,
+	}
+
+	resp, err = json.Marshal(response)
+	return
+}
