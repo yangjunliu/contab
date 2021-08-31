@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/yangjunliu/crontab/master"
 	"runtime"
-	"time"
 )
 
 var (
@@ -33,17 +32,13 @@ func main() {
 		fmt.Println(err)
 	}
 
-	// 启动服务
-	if err := master.InitApiServer(); err != nil {
-		fmt.Println(err)
-	}
-
 	// 任务管理器
 	if err := master.InitJobMgr(); err != nil {
 		fmt.Println(err)
 	}
 
-	for {
-		time.Sleep(5 * time.Second)
+	// 启动服务
+	if err := master.InitApiServer(); err != nil {
+		fmt.Println(err)
 	}
 }
