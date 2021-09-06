@@ -3,16 +3,29 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/yangjunliu/crontab/master"
+	"log"
+	"os"
 	"runtime"
+
+	"github.com/yangjunliu/crontab/master"
 )
 
 var (
 	confFile string
+	pwd      string
+	err      error
 )
 
 func initArgs() {
-	flag.StringVar(&confFile, "config", "./master.json", "传入master配置")
+	pwd, err = os.Getwd()
+	if err != nil {
+		pwd = "./master.json"
+	} else {
+		pwd += "\\master\\main\\master.json"
+	}
+	log.Println(pwd)
+
+	flag.StringVar(&confFile, "config", pwd, "传入master配置")
 	flag.Parse()
 }
 

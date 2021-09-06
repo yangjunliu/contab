@@ -3,14 +3,15 @@ package master
 import (
 	"encoding/json"
 	"io/ioutil"
+	"path/filepath"
 )
 
 type Config struct {
-	ApiPort int `json:"apiPort"`
-	ApiReadTimeout int `json:"apiReadTimeout"`
-	ApiWriteTimeout int `json:"apiWriteTimeout"`
-	EtcdEndpoints []string `json:"etcdEndpoints"`
-	EtcdDialTimeout int `json:"etcdDialTimeout"`
+	ApiPort         int      `json:"apiPort"`
+	ApiReadTimeout  int      `json:"apiReadTimeout"`
+	ApiWriteTimeout int      `json:"apiWriteTimeout"`
+	EtcdEndpoints   []string `json:"etcdEndpoints"`
+	EtcdDialTimeout int      `json:"etcdDialTimeout"`
 }
 
 var (
@@ -20,10 +21,12 @@ var (
 func InitConfig(filename string) (err error) {
 	var (
 		content []byte
-		conf Config
+		conf    Config
 	)
 	if content, err = ioutil.ReadFile(filename); err != nil {
-		return
+		if content, err = ioutil.ReadFile(filepath.ToSlash(filename)); err != nil {
+			return
+		}
 	}
 
 	if err = json.Unmarshal(content, &conf); err != nil {
