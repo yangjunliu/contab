@@ -3,29 +3,39 @@ package master
 import (
 	"context"
 	"encoding/json"
-	"github.com/yangjunliu/crontab/common"
-	clientv3 "go.etcd.io/etcd/client/v3"
 	"time"
+
+	"github.com/yangjunliu/crontab/common"
+	"go.etcd.io/etcd/api/v3/mvccpb"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 // 任务管理器
 type JobMgr struct {
 	client *clientv3.Client
-	kv clientv3.KV
-	lease clientv3.Lease
+	kv     clientv3.KV
+	lease  clientv3.Lease
 }
 
 var (
 	G_jobMgr *JobMgr
 )
 
-func InitJobMgr() (err error)  {
+type ErrorJob struct {
+	Msg string
+}
+
+func (e *ErrorJob) Error() string {
+	return e.Msg
+}
+
+func InitJobMgr() (err error) {
 	var (
 		client *clientv3.Client
 	)
 	// 初始化配置
 	config := clientv3.Config{
-		Endpoints: G_config.EtcdEndpoints,
+		Endpoints:   G_config.EtcdEndpoints,
 		DialTimeout: time.Duration(G_config.EtcdDialTimeout) * time.Millisecond,
 	}
 
@@ -39,18 +49,18 @@ func InitJobMgr() (err error)  {
 
 	G_jobMgr = &JobMgr{
 		client: client,
-		kv: kv,
-		lease: lease,
+		kv:     kv,
+		lease:  lease,
 	}
 	return
 }
 
-func (jobMgr *JobMgr)SaveJob(job *common.Job) (oldJob common.Job, err error) {
+func (jobMgr *JobMgr) SaveJob(job *common.Job) (oldJob common.Job, err error) {
 	// 把任务保存到/cron/jobs/任务名
 	var (
-		jobKey string
+		jobKey   string
 		jobValue []byte
-		putResp *clientv3.PutResponse
+		putResp  *clientv3.PutResponse
 	)
 
 	jobKey = "/cron/jobs" + job.Name
@@ -67,5 +77,32 @@ func (jobMgr *JobMgr)SaveJob(job *common.Job) (oldJob common.Job, err error) {
 			err = nil
 		}
 	}
+	return
+}
+
+func (jobMgr *JobMgr) DelJob(jobName string) (oldJobs common.JobList, err error) {
+
+	var (
+		jobKey  string
+		delResp *clientv3.DeleteResponse
+		kvPair  *mvccpb.KeyValue
+	)
+
+	jobKey = "/cron/jobs" + jobName
+	if delResp, err = jobMgr.kv.Delete(context.TODO(), jobKey, clientv3.WithPrevKV()); err != nil {
+		return
+	}
+
+	if len(delResp.PrevKvs) > 0 {
+		for _, kvPair = range delResp.PrevKvs {
+			oldJob := new(common.Job)
+			if err = json.Unmarshal(kvPair.Value, oldJob); err == nil {
+				oldJobs.Jobs = append(oldJobs.Jobs, *oldJob)
+			}
+		}
+	} else {
+		err = &ErrorJob{Msg: "任务不存在"}
+	}
+
 	return
 }

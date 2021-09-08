@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"runtime"
 
@@ -23,7 +22,6 @@ func initArgs() {
 	} else {
 		pwd += "\\master\\main\\master.json"
 	}
-	log.Println(pwd)
 
 	flag.StringVar(&confFile, "config", pwd, "传入master配置")
 	flag.Parse()
