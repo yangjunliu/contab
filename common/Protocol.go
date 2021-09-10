@@ -17,11 +17,6 @@ type JobName struct {
 	Name string `json:"name"`
 }
 
-// 列表
-type JobList struct {
-	Jobs []Job
-}
-
 // HTTP接口
 type Response struct {
 	ErrNo int         `json:"err_no"`

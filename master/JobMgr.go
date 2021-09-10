@@ -63,7 +63,7 @@ func (jobMgr *JobMgr) SaveJob(job *common.Job) (oldJob common.Job, err error) {
 		putResp  *clientv3.PutResponse
 	)
 
-	jobKey = "/cron/jobs" + job.Name
+	jobKey = common.JOB_NAME_PREFIX + job.Name
 	if jobValue, err = json.Marshal(job); err != nil {
 		return
 	}
@@ -80,7 +80,7 @@ func (jobMgr *JobMgr) SaveJob(job *common.Job) (oldJob common.Job, err error) {
 	return
 }
 
-func (jobMgr *JobMgr) DelJob(jobName string) (oldJobs common.JobList, err error) {
+func (jobMgr *JobMgr) DelJob(jobName string) (oldJobs []common.Job, err error) {
 
 	var (
 		jobKey  string
@@ -88,7 +88,7 @@ func (jobMgr *JobMgr) DelJob(jobName string) (oldJobs common.JobList, err error)
 		kvPair  *mvccpb.KeyValue
 	)
 
-	jobKey = "/cron/jobs" + jobName
+	jobKey = common.JOB_NAME_PREFIX + jobName
 	if delResp, err = jobMgr.kv.Delete(context.TODO(), jobKey, clientv3.WithPrevKV()); err != nil {
 		return
 	}
@@ -97,7 +97,7 @@ func (jobMgr *JobMgr) DelJob(jobName string) (oldJobs common.JobList, err error)
 		for _, kvPair = range delResp.PrevKvs {
 			oldJob := new(common.Job)
 			if err = json.Unmarshal(kvPair.Value, oldJob); err == nil {
-				oldJobs.Jobs = append(oldJobs.Jobs, *oldJob)
+				oldJobs = append(oldJobs, *oldJob)
 			}
 		}
 	} else {

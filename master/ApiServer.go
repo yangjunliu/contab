@@ -44,15 +44,13 @@ func handleJobSave(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 	if bytes, err = common.BuildResponse(0, "success", oldJob); err == nil {
 		w.Write(bytes)
 	}
-
-	return
 }
 
 // 任务从etcd中删除
 func handleJobDelete(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var (
 		job     common.Job
-		oldJobs common.JobList
+		oldJobs []common.Job
 		err     error
 		bytes   []byte
 	)
