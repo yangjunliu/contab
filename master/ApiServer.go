@@ -32,12 +32,14 @@ func handleJobSave(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 	// 取表单中的job字段
 	if err = json.NewDecoder(r.Body).Decode(&job); err != nil {
 		common.ErrorResponse(w, common.ErrorApi{Code: 10001, Msg: err.Error()})
+		return
 	}
 
 	// 保存到etcd
 	oldJob, err = G_jobMgr.SaveJob(&job)
 	if err != nil {
 		common.ErrorResponse(w, common.ErrorApi{Code: 10002, Msg: err.Error()})
+		return
 	}
 
 	// 保存成功
